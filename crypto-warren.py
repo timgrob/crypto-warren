@@ -9,4 +9,4 @@ if __name__ == "__main__":
         print('hello world')
         print(key)
         print('----------')
-        time.sleep(5)
+        time.sleep(120)
