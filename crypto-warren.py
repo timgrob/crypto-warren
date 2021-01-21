@@ -16,8 +16,8 @@ if __name__ == '__main__':
     # parameters
     ticker = environ['ticker']
     margin = environ['margin']
-    api_key = environ['binance-api-key']
-    secret = environ['binance-secret']
+    api_key = environ['bitstamp-api-key']
+    secret = environ['bitstamp-secret']
     time_out = environ['time-out']
     enable_rate_limit = environ['enable-rate-limit']
 
