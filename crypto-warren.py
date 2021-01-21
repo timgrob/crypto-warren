@@ -21,6 +21,10 @@ if __name__ == '__main__':
     time_out = environ['time-out']
     enable_rate_limit = environ['enable-rate-limit']
 
+    print(type(margin))
+    print(type(enable_rate_limit))
+    print(type(api_key))
+
     # Get exchange
     exchange = ccxt.binance({
         'apiKey': api_key,
