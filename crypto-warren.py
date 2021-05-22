@@ -8,8 +8,12 @@ from os import environ
 
 
 if __name__ == '__main__':
-    app_time = datetime.now()
-    print('Running')
+
+    while True:
+        app_time = datetime.now()
+        print('Running')
+        time.sleep(3000)
+
     # logging.basicConfig(filename='logfile.log', level=logging.INFO)
     # print('{}: Start Program'.format(app_time.strftime('%Y-%m-%d %H:%M:%S')))
     # logging.info('{}: Start Program'.format(app_time.strftime('%Y-%m-%d %H:%M:%S')))
@@ -95,4 +99,3 @@ if __name__ == '__main__':
     #         have_bought_in_the_last_24h = False if time_delta.days >= 1 else have_bought_in_the_last_24h
 
     #    time.sleep(random.randint(30, 120))
-    time.sleep(3000)
