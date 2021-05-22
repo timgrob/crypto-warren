@@ -8,10 +8,10 @@ from os import environ
 
 
 if __name__ == '__main__':
-
+    print('Start')
     while True:
         app_time = datetime.now()
-        print('Running')
+        print('Running ...')
         time.sleep(3000)
 
     # logging.basicConfig(filename='logfile.log', level=logging.INFO)
