@@ -9,7 +9,7 @@ chardet==3.0.4
 cryptography==3.3.1
 idna==2.10
 multidict==5.1.0
-numpy @ file:///Users/runner/miniforge3/conda-bld/numpy_1610324566095/work
+numpy==1.20.3
 pycares==3.1.1
 pycparser==2.20
 requests==2.25.1
