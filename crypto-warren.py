@@ -12,7 +12,7 @@ if __name__ == '__main__':
     while True:
         app_time = datetime.now()
         print('Running ...')
-        time.sleep(3000)
+        time.sleep(3)
 
     # logging.basicConfig(filename='logfile.log', level=logging.INFO)
     # print('{}: Start Program'.format(app_time.strftime('%Y-%m-%d %H:%M:%S')))
