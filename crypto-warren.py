@@ -12,6 +12,7 @@ if __name__ == '__main__':
     while True:
         app_time = datetime.now()
         print('Running ...')
+        print('test')
         time.sleep(3)
 
     # logging.basicConfig(filename='logfile.log', level=logging.INFO)
