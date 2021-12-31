@@ -9,8 +9,8 @@ def main() -> None:
     # parameters
     ticker = environ['ticker']
     margin = float(environ['margin'])
-    api_key = environ['bitstamp-api-key']
-    secret = environ['bitstamp-secret']
+    api_key = environ['kraken-api-key']
+    secret = environ['kraken-secret']
     time_out = int(environ['time-out'])
     enable_rate_limit = bool(environ['enable-rate-limit'])
 
