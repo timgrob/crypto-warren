@@ -20,6 +20,7 @@ class VolatilityTrader(TradingBot):
         # initialize logger
         logging.basicConfig(filename='logfile.log', level=logging.INFO)
         logging.info(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Start Program")
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Start Program")
 
         currencies = token.split('/')
         balance = self.exchange.fetch_balance()
@@ -31,15 +32,16 @@ class VolatilityTrader(TradingBot):
             token_data = self.exchange.fetch_token_data(token)
             passed_24h = True if (datetime.now() - timedelta(hours=24)) > last_buy_trade.timestamp else False
 
-            if token_data['bid'] >= (1 + self.margin) * token_data['low'] and not self.trades.empty() and token_data['bid'] > last_buy_trade.price:
+            if token_data['bid'] >= (1 + (self.margin*0.6)) * token_data['low'] and not self.trades.empty() and token_data['bid'] > last_buy_trade.price:
                 last_trade = self.trades.get()
                 sell_order = self.exchange.create_limit_sell_order(token_data['symbol'], last_trade.qty, token_data['bid'])
 
                 # log sell trade
-                logging.info(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
-                             f"{sell_order['side']} {sell_order['symbol']} - "
-                             f"{sell_order['amount']} @ {sell_order['price']}")
-
+                info_txt_sell = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "\
+                                f"{sell_order['side']} {sell_order['symbol']} - "\
+                                f"{sell_order['amount']} @ {sell_order['price']}"
+                logging.info(info_txt_sell)
+                print(info_txt_sell)
             elif token_data['ask'] <= (1 - self.margin) * token_data['high'] and not self.trades.full() and passed_24h:
                 amount = invest_cash_amount/token_data['ask']
                 buy_order = self.exchange.create_limit_buy_order(token_data['symbol'], amount, token_data['ask'])
@@ -51,10 +53,11 @@ class VolatilityTrader(TradingBot):
                 self.trades.put(last_buy_trade)
 
                 # log buy trade
-                logging.info(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "
-                             f"{buy_order['side']} {buy_order['symbol']} - "
-                             f"{buy_order['amount']} @ {buy_order['price']}")
+                info_txt_buy = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "\
+                               f"{buy_order['side']} {buy_order['symbol']} - "\
+                               f"{buy_order['amount']} @ {buy_order['price']}"
+                logging.info(info_txt_buy)
+                print(info_txt_buy)
             else:
+                time.sleep(random.randint(30, 120))
                 continue
-
-            time.sleep(random.randint(30, 120))
