@@ -28,6 +28,8 @@ class VolatilityTrader(TradingBot):
         invest_cash_amount = total_cash/self.max_number_investment
         last_buy_trade = Trade((datetime.now() - timedelta(hours=24)), token, 0, 0.0)
 
+        print(f"Trade on {token} and margin {self.margin} with an investment amount of {invest_cash_amount}")
+
         while True:
             token_data = self.exchange.fetch_token_data(token)
             passed_24h = True if (datetime.now() - timedelta(hours=24)) > last_buy_trade.timestamp else False
