@@ -1,4 +1,5 @@
 from exchanges.Bitstamp import Bitstamp
+from exchanges.Kraken import Kraken
 from os import environ
 from bots.VolatilityTrader import VolatilityTrader
 
@@ -15,7 +16,7 @@ def main() -> None:
     enable_rate_limit = bool(environ['enable-rate-limit'])
 
     # Exchange
-    exchange = Bitstamp(api_key, secret, time_out, enable_rate_limit)
+    exchange = Kraken(api_key, secret, time_out, enable_rate_limit)
     exchange.connect()
 
     # Trading bot starts trading
