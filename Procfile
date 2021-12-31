@@ -1,1 +1,1 @@
-worker: python crypto-warren.py
+worker: python main.py
