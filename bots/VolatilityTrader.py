@@ -1,6 +1,7 @@
 import time
 import random
 import logging
+import sched
 from queue import LifoQueue
 from datetime import datetime, timedelta
 from strategies.Trade import Trade
@@ -62,4 +63,5 @@ class VolatilityTrader(TradingBot):
                 print(info_txt_buy)
             else:
                 time.sleep(random.randint(30, 120))
+                print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue
