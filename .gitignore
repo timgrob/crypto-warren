@@ -133,4 +133,3 @@ dmypy.json
 
 # logfile
 *.log
-/tests/
