@@ -1,7 +1,7 @@
-from exchanges.Bitstamp import Bitstamp
-from exchanges.Kraken import Kraken
+import ccxt
 from os import environ
 from bots.VolatilityTrader import VolatilityTrader
+from strategies.TradingStrategy import VolatilityTradingStrategy
 
 
 def main() -> None:
@@ -13,14 +13,15 @@ def main() -> None:
     api_key = environ['kraken-api-key']
     secret = environ['kraken-secret']
     time_out = int(environ['time-out'])
-    enable_rate_limit = bool(environ['enable-rate-limit'])
 
     # Exchange
-    exchange = Kraken(api_key, secret, time_out, enable_rate_limit)
-    exchange.connect()
+    exchange = ccxt.kraken({'apiKey': api_key, 'secret': secret, 'timeout': time_out})
+
+    # Trading strategy
+    volatility_strategy = VolatilityTradingStrategy(margin=margin)
 
     # Trading bot starts trading
-    trading_bot = VolatilityTrader(exchange=exchange, margin=margin)
+    trading_bot = VolatilityTrader(exchange=exchange, trading_strategy=volatility_strategy)
     trading_bot.trade(ticker)
 
 
