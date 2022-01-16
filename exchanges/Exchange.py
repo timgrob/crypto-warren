@@ -15,11 +15,3 @@ class Exchange(ABC):
     @abstractmethod
     def connect(self) -> None:
         """Establish connection to exchange"""
-
-    @abstractmethod
-    def fetch_balance(self) -> json:
-        """Retrieve balance data of the exchange"""
-
-    @abstractmethod
-    def fetch_token_data(self, token: str) -> json:
-        """Retrieve data for a particular coin"""
