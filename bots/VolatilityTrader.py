@@ -38,7 +38,7 @@ class VolatilityTrader(TradingBot):
 
         while self.RUNNING:
             token_data = self.exchange.fetch_ticker(token)
-            passed_24h = True if (datetime.now() - timedelta(hours=12)) > last_buy_trade.timestamp else False
+            passed_12h = True if (datetime.now() - timedelta(hours=12)) > last_buy_trade.timestamp else False
 
             if self.trading_strategy.sell_signal(token_data) and not self.trades.empty() and token_data['bid'] > last_buy_trade.price:
                 last_buy_trade = self.trades.get()
@@ -56,7 +56,7 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_sell)
                 print(info_txt_sell)
 
-            elif self.trading_strategy.buy_signal(token_data) and not self.trades.full() and passed_24h:
+            elif self.trading_strategy.buy_signal(token_data) and not self.trades.full() and passed_12h:
                 amount = round(invest_cash_amount/token_data['ask'], 4)
                 buy_order = self.exchange.create_limit_buy_order(token_data['symbol'], amount, token_data['ask'])
 
@@ -80,6 +80,6 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_buy)
                 print(info_txt_buy)
             else:
-                time.sleep(random.randint(60, 120))
+                time.sleep(random.randint(60*15, 60*30))
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue
