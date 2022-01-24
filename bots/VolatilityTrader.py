@@ -34,6 +34,7 @@ class VolatilityTrader(TradingBot):
         info_txt = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: " \
                    f"Trading {token} - {self.trading_strategy} with {invest_cash_amount}{currencies[1]}"
         logging.info(info_txt)
+        print(info_txt)
 
         while self.RUNNING:
             token_data = self.exchange.fetch_ticker(token)
