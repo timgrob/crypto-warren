@@ -54,6 +54,7 @@ class VolatilityTrader(TradingBot):
                                 f"{sell_order['side']} {sell_order['symbol']} - "\
                                 f"{sell_order['amount']} @ {sell_order['price']}"
                 logging.info(info_txt_sell)
+                print(info_txt_sell)
 
             elif self.trading_strategy.buy_signal(token_data) and not self.trades.full() and passed_24h:
                 amount = round(invest_cash_amount/token_data['ask'], 4)
@@ -77,6 +78,7 @@ class VolatilityTrader(TradingBot):
                                f"{buy_order['side']} {buy_order['symbol']} - "\
                                f"{buy_order['amount']} @ {buy_order['price']}"
                 logging.info(info_txt_buy)
+                print(info_txt_buy)
             else:
                 time.sleep(random.randint(60, 120))
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
