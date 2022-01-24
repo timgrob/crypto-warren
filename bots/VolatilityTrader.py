@@ -77,6 +77,6 @@ class VolatilityTrader(TradingBot):
                                f"{buy_order['amount']} @ {buy_order['price']}"
                 logging.info(info_txt_buy)
             else:
-                time.sleep(random.randint(1, 2))
+                time.sleep(random.randint(60, 120))
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue
