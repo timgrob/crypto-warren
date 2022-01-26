@@ -44,5 +44,7 @@ def main_json():
     with open('json_data.json', 'w') as outfile:
         outfile.write(json_string)
 
+
 if __name__ == "__main__":
+    main_json()
     main()
