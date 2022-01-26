@@ -1,4 +1,5 @@
 import ccxt
+import json
 from os import environ
 from bots.VolatilityTrader import VolatilityTrader
 from strategies.TradingStrategy import VolatilityTradingStrategy
@@ -24,6 +25,24 @@ def main() -> None:
     trading_bot = VolatilityTrader(exchange=exchange, trading_strategy=volatility_strategy)
     trading_bot.trade(ticker)
 
+def main_json():
+    import json
+
+    data = {
+        'employees': [
+            {
+                'name': 'John Doe',
+                'department': 'Marketing',
+                'place': 'Remote'
+            }
+        ]
+    }
+
+    json_string = json.dumps(data)
+
+    # Using a JSON string
+    with open('json_data.json', 'w') as outfile:
+        outfile.write(json_string)
 
 if __name__ == "__main__":
     main()
