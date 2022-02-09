@@ -5,6 +5,7 @@ import ccxt
 import logging
 from queue import LifoQueue
 from datetime import datetime, timedelta
+from database.DatabaseConnector import DatabaseConnector
 from strategies.Trade import Trade
 from bots.TradingBot import TradingBot
 from strategies.TradingStrategy import TradingStrategy
@@ -12,11 +13,15 @@ from strategies.TradingStrategy import TradingStrategy
 
 class VolatilityTrader(TradingBot):
 
-    def __init__(self, exchange: ccxt.Exchange, trading_strategy: TradingStrategy, max_number_investment: int = 4) -> None:
+    def __init__(self, exchange: ccxt.Exchange, trading_strategy: TradingStrategy, database_connection: DatabaseConnector) -> None:
         super().__init__(exchange, trading_strategy)
-        self.trades = LifoQueue(max_number_investment)
-        self.max_number_investment = max_number_investment
+        self.database_connection = database_connection
         self.RUNNING = True
+        self.max_number_investment = 4
+        self.trades = LifoQueue(self.max_number_investment)
+        trades = self.database_connection.fetch_all_trades()
+        for trade in trades:
+            self.trades.put(trade)
 
     def trade(self, token: str) -> None:
         """This is the trading function for the volatility trader"""
@@ -29,7 +34,13 @@ class VolatilityTrader(TradingBot):
         balance = self.exchange.fetch_balance()
         total_cash = balance[currencies[1]]['total']
         invest_cash_amount = total_cash/self.max_number_investment
-        last_buy_trade = Trade((datetime.now() - timedelta(hours=24)), token, 0, 0.0)
+
+        # get last buy trade if there are any
+        if self.trades.empty():
+            last_buy_trade = Trade((datetime.now() - timedelta(hours=24)), token, 0, 0.0)
+        else:
+            last_buy_trade = self.trades.get()
+            self.trades.put(last_buy_trade)
 
         info_txt = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: " \
                    f"Trading {token} - {self.trading_strategy} with {invest_cash_amount}{currencies[1]}"
@@ -38,11 +49,12 @@ class VolatilityTrader(TradingBot):
 
         while self.RUNNING:
             token_data = self.exchange.fetch_ticker(token)
-            passed_12h = True if (datetime.now() - timedelta(hours=12)) > last_buy_trade.timestamp else False
+            passed_24h = True if (datetime.now() - timedelta(hours=24)) > last_buy_trade.timestamp else False
 
             if self.trading_strategy.sell_signal(token_data) and not self.trades.empty() and token_data['bid'] > last_buy_trade.price:
                 last_buy_trade = self.trades.get()
                 sell_order = self.exchange.create_limit_sell_order(token_data['symbol'], last_buy_trade.qty, token_data['bid'])
+                self.database_connection.delete_trade_with_id(last_buy_trade)
 
                 # update last buy trade, yet remember to put the element back into the queue
                 if not self.trades.empty():
@@ -56,7 +68,7 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_sell)
                 print(info_txt_sell)
 
-            elif self.trading_strategy.buy_signal(token_data) and not self.trades.full() and passed_12h:
+            elif self.trading_strategy.buy_signal(token_data) and not self.trades.full() and passed_24h:
                 amount = round(invest_cash_amount/token_data['ask'], 4)
                 buy_order = self.exchange.create_limit_buy_order(token_data['symbol'], amount, token_data['ask'])
 
@@ -72,6 +84,7 @@ class VolatilityTrader(TradingBot):
                                        buy_order['price']
                                        )
                 self.trades.put(last_buy_trade)
+                self.database_connection.persist_trade(last_buy_trade)
 
                 # log buy trade
                 info_txt_buy = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "\
@@ -80,6 +93,6 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_buy)
                 print(info_txt_buy)
             else:
-                time.sleep(random.randint(60*15, 60*30))
+                time.sleep(random.randint(60*15, 60*30)) # sleep for 15-30min
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue
