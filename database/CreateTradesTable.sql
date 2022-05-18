@@ -8,6 +8,6 @@ CREATE TABLE TRADES (
 	price NUMERIC NOT NULL
 );
 
-INSERT INTO TRADES (symbol, qty, price) VALUES ('ETH', 100, 3000);
-INSERT INTO TRADES (symbol, qty, price) VALUES ('ETH', 200, 3500);
+--INSERT INTO TRADES (symbol, qty, price) VALUES ('ETH', 100, 3000);
+--INSERT INTO TRADES (symbol, qty, price) VALUES ('ETH', 200, 3500);
 

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from strategies.Trade import Trade
+from bots.Trade import Trade
 
 
 class DatabaseConnector(ABC):

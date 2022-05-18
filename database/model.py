@@ -16,5 +16,3 @@ class Trade(Base):
 
     def __repr__(self):
         return f"<Trade(TimeStamp={self.timestamp}, symbol={self.symbol}, quantity={self.qty}, price={self.price})>"
-
-Base.metadata.create_all(engine)

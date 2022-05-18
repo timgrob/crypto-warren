@@ -1,6 +1,6 @@
-from strategies.Trade import Trade
-from DatabaseConextManagers import postgres_manager
-from DatabaseConnector import DatabaseConnector
+from bots.Trade import Trade
+from database.DatabaseContextManagers import postgres_manager
+from database.DatabaseConnector import DatabaseConnector
 
 
 class PostgresDatabase(DatabaseConnector):
