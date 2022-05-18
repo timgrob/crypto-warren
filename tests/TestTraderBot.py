@@ -3,6 +3,7 @@ from unittest.mock import Mock
 from bots.TradingBot import TradingBot
 from bots.VolatilityTrader import VolatilityTrader
 from strategies.TradingStrategy import VolatilityTradingStrategy
+from database.DatabaseConnectors import PostgresDatabase
 
 
 class TestTraderBot(unittest.TestCase):
@@ -11,19 +12,19 @@ class TestTraderBot(unittest.TestCase):
     def setUp(self) -> None:
         self.ticker = 'XLM/USD'
         self.exchange = Mock()
+        self.url = 'postgres://jlcxpgmumdpogd:9ce8a99afd4be6e8e2e82fa6b1942979c1eca757f5db61c041d000a5169a6c24@ec2-34-247-118-233.eu-west-1.compute.amazonaws.com:5432/d84i2qs4fpm556'
 
     def test_bot_init(self):
         """test trader bot initialization"""
-
         volatility_strategy = VolatilityTradingStrategy()
-        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy, PostgresDatabase(self.url))
         self.assertIsInstance(volatility_trader, TradingBot)
 
     def test_bot_trade_buy_sell(self):
         """test trader bot buy signal"""
 
         volatility_strategy = VolatilityTradingStrategy()
-        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy, PostgresDatabase(self.url))
 
         self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
         self.exchange.fetch_ticker.return_value = {'symbol': 'XLM/USD',
@@ -80,7 +81,7 @@ class TestTraderBot(unittest.TestCase):
 
     def test_trader_bot_2x_buy(self):
         volatility_strategy = VolatilityTradingStrategy()
-        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy, PostgresDatabase(self.url))
 
         self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
         self.exchange.fetch_ticker.side_effect = [
