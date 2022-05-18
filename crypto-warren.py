@@ -3,6 +3,7 @@ from os import environ
 from database.DatabaseConnectors import PostgresDatabase
 from bots.VolatilityTrader import VolatilityTrader
 from strategies.TradingStrategy import VolatilityTradingStrategy
+from sqlalchemy import create_engine
 
 
 def main() -> None:
@@ -16,9 +17,6 @@ def main() -> None:
     time_out = int(environ['time-out'])
     database_url = environ['database_url']
 
-    # Database
-    postgres = PostgresDatabase(database_url)
-
     # Exchange
     exchange = ccxt.kraken({'apiKey': api_key, 'secret': secret, 'timeout': time_out})
 
@@ -26,7 +24,7 @@ def main() -> None:
     volatility_strategy = VolatilityTradingStrategy(margin=margin)
 
     # Trading bot starts trading
-    trading_bot = VolatilityTrader(exchange=exchange, trading_strategy=volatility_strategy, database_connection=postgres)
+    trading_bot = VolatilityTrader(exchange=exchange, trading_strategy=volatility_strategy)
     trading_bot.trade(ticker)
 
 
