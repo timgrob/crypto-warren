@@ -6,21 +6,25 @@ import logging
 from queue import LifoQueue
 from datetime import datetime, timedelta
 from database.DatabaseConnector import DatabaseConnector
-from strategies.Trade import Trade
+from database.database_connection import Session
+from database.model import Trade
 from bots.TradingBot import TradingBot
 from strategies.TradingStrategy import TradingStrategy
 
 
 class VolatilityTrader(TradingBot):
 
-    def __init__(self, exchange: ccxt.Exchange, trading_strategy: TradingStrategy, database_connection: DatabaseConnector) -> None:
+    def __init__(self, exchange: ccxt.Exchange, trading_strategy: TradingStrategy) -> None:
         super().__init__(exchange, trading_strategy)
-        self.database_connection = database_connection
         self.RUNNING = True
         self.max_number_investment = 4
         self.trades = LifoQueue(self.max_number_investment)
-        trades = self.database_connection.fetch_all_trades()
-        for trade in trades:
+        with Session() as session:
+            with session.begin():
+                trades = session.query().all()
+
+        for tr in trades:
+            trade = Trade(tr[1], tr[2], tr[3], tr[4])
             self.trades.put(trade)
 
     def trade(self, token: str) -> None:
@@ -54,7 +58,9 @@ class VolatilityTrader(TradingBot):
             if self.trading_strategy.sell_signal(token_data) and not self.trades.empty() and token_data['bid'] > last_buy_trade.price:
                 last_buy_trade = self.trades.get()
                 sell_order = self.exchange.create_limit_sell_order(token_data['symbol'], last_buy_trade.qty, token_data['bid'])
-                self.database_connection.delete_trade_with_id(last_buy_trade)
+                with Session() as session:
+                    with session.begin():
+                        session.delete(last_buy_trade)
 
                 # update last buy trade, yet remember to put the element back into the queue
                 if not self.trades.empty():
@@ -84,6 +90,13 @@ class VolatilityTrader(TradingBot):
                                        buy_order['price']
                                        )
                 self.trades.put(last_buy_trade)
+
+                # write buy trade to database
+                with Session() as session:
+                    with session.begin():
+                        session.add(last_buy_trade)
+                        session.commit()
+
                 self.database_connection.persist_trade(last_buy_trade)
 
                 # log buy trade
@@ -93,6 +106,6 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_buy)
                 print(info_txt_buy)
             else:
-                time.sleep(random.randint(60*15, 60*30)) # sleep for 15-30min
+                time.sleep(random.randint(60*15, 60*30))  # sleep for 15-30min
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue
