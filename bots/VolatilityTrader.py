@@ -102,6 +102,6 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_buy)
                 print(info_txt_buy)
             else:
-                time.sleep(random.randint(60*0.5, 60*1))  # sleep for 15-30min
+                time.sleep(random.randint(60*15, 60*30))  # sleep for 15-30min
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue
