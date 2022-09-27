@@ -1,9 +1,7 @@
 import ccxt
 from os import environ
-from database.DatabaseConnectors import PostgresDatabase
 from bots.VolatilityTrader import VolatilityTrader
-from strategies.TradingStrategy import VolatilityTradingStrategy
-from sqlalchemy import create_engine
+from strategies.TradingStrategies import VolatilityTradingStrategy
 
 
 def main() -> None:
@@ -15,13 +13,13 @@ def main() -> None:
     api_key = environ['kraken-api-key']
     secret = environ['kraken-secret']
     time_out = int(environ['time-out'])
-    database_url = environ['database_url']
+    database_url = environ['DATABASE_URL']
 
     # Exchange
     exchange = ccxt.kraken({'apiKey': api_key, 'secret': secret, 'timeout': time_out})
 
     # Trading strategy
-    volatility_strategy = VolatilityTradingStrategy(margin=margin)
+    volatility_strategy = VolatilityTradingStrategy(margin=margin, bounce_back=0.7)
 
     # Trading bot starts trading
     trading_bot = VolatilityTrader(exchange=exchange, trading_strategy=volatility_strategy)

@@ -5,29 +5,27 @@ import ccxt
 import logging
 from queue import LifoQueue
 from datetime import datetime, timedelta
-from database.DatabaseConnector import DatabaseConnector
 from database.database_connection import Session
 from database.model import Trade
 from bots.TradingBot import TradingBot
-from strategies.TradingStrategy import TradingStrategy
+from strategies.TradingStrategies import TradingStrategy
 
 
 class VolatilityTrader(TradingBot):
 
     def __init__(self, exchange: ccxt.Exchange, trading_strategy: TradingStrategy) -> None:
         super().__init__(exchange, trading_strategy)
-        self.RUNNING = True
         self.max_number_investment = 4
         self.trades = LifoQueue(self.max_number_investment)
         with Session() as session:
             with session.begin():
-                trades = session.query().all()
+                trades = session.query(Trade).all()
 
-        for tr in trades:
-            trade = Trade(tr[1], tr[2], tr[3], tr[4])
-            self.trades.put(trade)
+            for tr in trades:
+                trade = Trade(timestamp=tr.timestamp, symbol=tr.symbol, qty=tr.qty, price=tr.price)
+                self.trades.put(trade)
 
-    def trade(self, token: str) -> None:
+    def trade(self, token: str, running: bool = True) -> None:
         """This is the trading function for the volatility trader"""
 
         # initialize logger
@@ -37,11 +35,12 @@ class VolatilityTrader(TradingBot):
         currencies = token.split('/')
         balance = self.exchange.fetch_balance()
         total_cash = balance[currencies[1]]['total']
-        invest_cash_amount = total_cash/self.max_number_investment
+        if total_cash != 0 and self.trades.qsize() < 4:
+            invest_cash_amount = total_cash/(self.max_number_investment-self.trades.qsize())
 
         # get last buy trade if there are any
         if self.trades.empty():
-            last_buy_trade = Trade((datetime.now() - timedelta(hours=24)), token, 0, 0.0)
+            last_buy_trade = Trade(timestamp=datetime.now() - timedelta(hours=24), symbol=token, qty=0, price=0.0)
         else:
             last_buy_trade = self.trades.get()
             self.trades.put(last_buy_trade)
@@ -51,7 +50,7 @@ class VolatilityTrader(TradingBot):
         logging.info(info_txt)
         print(info_txt)
 
-        while self.RUNNING:
+        while running:
             token_data = self.exchange.fetch_ticker(token)
             passed_24h = True if (datetime.now() - timedelta(hours=24)) > last_buy_trade.timestamp else False
 
@@ -84,10 +83,10 @@ class VolatilityTrader(TradingBot):
                 else:
                     buy_oder_datetime = datetime.now()
 
-                last_buy_trade = Trade(buy_oder_datetime,
-                                       buy_order['symbol'],
-                                       buy_order['amount'],
-                                       buy_order['price']
+                last_buy_trade = Trade(timestamp=buy_oder_datetime,
+                                       symbol=buy_order['symbol'],
+                                       qty=buy_order['amount'],
+                                       price=buy_order['price']
                                        )
                 self.trades.put(last_buy_trade)
 
@@ -95,9 +94,6 @@ class VolatilityTrader(TradingBot):
                 with Session() as session:
                     with session.begin():
                         session.add(last_buy_trade)
-                        session.commit()
-
-                self.database_connection.persist_trade(last_buy_trade)
 
                 # log buy trade
                 info_txt_buy = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: "\
@@ -106,6 +102,6 @@ class VolatilityTrader(TradingBot):
                 logging.info(info_txt_buy)
                 print(info_txt_buy)
             else:
-                time.sleep(random.randint(60*15, 60*30))  # sleep for 15-30min
+                time.sleep(random.randint(60*0.5, 60*1))  # sleep for 15-30min
                 print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: continue")
                 continue

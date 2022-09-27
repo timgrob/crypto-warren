@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from bots.Trade import Trade
+from database.model import Trade
 
 
 class DatabaseConnector(ABC):
@@ -13,5 +13,9 @@ class DatabaseConnector(ABC):
         """Persist one single trade"""
 
     @abstractmethod
+    def delete_trade(self, trade: Trade):
+        """Deete a single trade"""
+
+    @abstractmethod
     def delete_trade_with_id(self, id: int):
-        """Delete a single trade"""
+        """Delete a single trade based on its id"""

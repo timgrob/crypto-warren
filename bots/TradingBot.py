@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from exchanges import Exchange
-from strategies.TradingStrategy import TradingStrategy
+from strategies.TradingStrategies import TradingStrategy
 
 
 class TradingBot(ABC):

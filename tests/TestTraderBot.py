@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock
 from bots.TradingBot import TradingBot
 from bots.VolatilityTrader import VolatilityTrader
-from strategies.TradingStrategy import VolatilityTradingStrategy
+from strategies.TradingStrategies import VolatilityTradingStrategy
 from database.DatabaseConnectors import PostgresDatabase
 
 
@@ -12,19 +12,19 @@ class TestTraderBot(unittest.TestCase):
     def setUp(self) -> None:
         self.ticker = 'XLM/USD'
         self.exchange = Mock()
-        self.url = 'postgres://jlcxpgmumdpogd:9ce8a99afd4be6e8e2e82fa6b1942979c1eca757f5db61c041d000a5169a6c24@ec2-34-247-118-233.eu-west-1.compute.amazonaws.com:5432/d84i2qs4fpm556'
+        self.url = 'postgresql://rpbfxloyfstnfm:14ebf390c87c2ac2aa88c516fec0aa7115f4a6794cd59a76b033f4f3fe02f89b@ec2-52-30-159-47.eu-west-1.compute.amazonaws.com:5432/d1s31eebs7ep6c'
 
     def test_bot_init(self):
         """test trader bot initialization"""
         volatility_strategy = VolatilityTradingStrategy()
-        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy, PostgresDatabase(self.url))
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
         self.assertIsInstance(volatility_trader, TradingBot)
 
     def test_bot_trade_buy_sell(self):
         """test trader bot buy signal"""
 
         volatility_strategy = VolatilityTradingStrategy()
-        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy, PostgresDatabase(self.url))
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
 
         self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
         self.exchange.fetch_ticker.return_value = {'symbol': 'XLM/USD',
@@ -75,87 +75,11 @@ class TestTraderBot(unittest.TestCase):
                                                               'fee': None,
                                                               'trades': None,
                                                               'fees': []}
-        volatility_trader.trade(self.ticker)
+        volatility_trader.trade(self.ticker, False)
         # assert self.exchange.create_limit_buy_order.assert_called()
         # assert self.exchange.create_limit_sell_order.assert_called()
 
     def test_trader_bot_2x_buy(self):
-        volatility_strategy = VolatilityTradingStrategy()
-        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy, PostgresDatabase(self.url))
-
-        self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
-        self.exchange.fetch_ticker.side_effect = [
-            {
-                'symbol': 'XLM/USD',
-                'timestamp': 1641903028764,
-                'datetime': '2022-01-11T00:00:00.764Z',
-                'high': 0.3,
-                'low': 0.24,
-                'bid': 0.25,
-                'ask': 0.26,
-            },
-            {
-                'symbol': 'XLM/USD',
-                'timestamp': 1641903028764,
-                'datetime': '2022-01-11T12:00:00.764Z',
-                'high': 0.28,
-                'low': 0.24,
-                'bid': 0.24,
-                'ask': 0.25,
-            },
-            {
-                'symbol': 'XLM/USD',
-                'timestamp': 1641903028764,
-                'datetime': '2022-01-11T12:00:00.764Z',
-                'high': 0.28,
-                'low': 0.24,
-                'bid': 0.25,
-                'ask': 0.27,
-            }
-        ]
-
-        self.exchange.create_limit_buy_order.side_effect = [
-            {
-                'id': 'O3NPC3-UJWI2-GH4I23',
-                'clientOrderId': None,
-                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
-                         'descr': {
-                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
-                'timestamp': 1600977946935,
-                'datetime': '2022-01-11T12:00:00.764Z',
-                'symbol': 'TRX/USD',
-                'type': 'limit',
-                'side': 'buy',
-                'price': 0.26,
-                'cost': None,
-                'amount': 50.0,
-                'filled': None,
-                'fee': None,
-                'trades': None,
-                'fees': []},
-            {
-                'id': 'O3NPC3-UJWI2-GH4I23',
-                'clientOrderId': None,
-                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
-                         'descr': {
-                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
-                'timestamp': 1600977946935,
-                'datetime': '2022-01-11T12:00:00.764Z',
-                'symbol': 'TRX/USD',
-                'type': 'limit',
-                'side': 'buy',
-                'price': 0.25,
-                'cost': None,
-                'amount': 50.0,
-                'filled': None,
-                'fee': None,
-                'trades': None,
-                'fees': []
-            }
-        ]
-        volatility_trader.trade(self.ticker)
-
-    def test_trader_bot_2x_buy_sell(self):
         volatility_strategy = VolatilityTradingStrategy()
         volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
 
@@ -182,28 +106,10 @@ class TestTraderBot(unittest.TestCase):
             {
                 'symbol': 'XLM/USD',
                 'timestamp': 1641903028764,
-                'datetime': '2022-01-10T12:00:00.764Z',
-                'high': 0.27,
-                'low': 0.25,
-                'bid': 0.26,
-                'ask': 0.25,
-            },
-            {
-                'symbol': 'XLM/USD',
-                'timestamp': 1641903028764,
                 'datetime': '2022-01-11T12:00:00.764Z',
                 'high': 0.28,
                 'low': 0.24,
-                'bid': 0.265,
-                'ask': 0.27,
-            },
-            {
-                'symbol': 'XLM/USD',
-                'timestamp': 1641903028764,
-                'datetime': '2022-01-12T12:00:00.764Z',
-                'high': 0.28,
-                'low': 0.24,
-                'bid': 0.26,
+                'bid': 0.25,
                 'ask': 0.27,
             }
         ]
@@ -247,6 +153,82 @@ class TestTraderBot(unittest.TestCase):
                 'fees': []
             }
         ]
+        volatility_trader.trade(self.ticker)
+
+    def test_trader_bot_2x_buy_1x_sell(self):
+        volatility_strategy = VolatilityTradingStrategy()
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
+
+        self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
+        self.exchange.fetch_ticker.side_effect = [
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-11T00:00:00.764Z',
+                'high': 0.30,
+                'low': 0.240,
+                'bid': 0.250,
+                'ask': 0.261,
+            },
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-10T12:00:00.764Z',
+                'high': 0.290,
+                'low': 0.250,
+                'bid': 0.270,
+                'ask': 0.260,
+            },
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'high': 0.280,
+                'low': 0.240,
+                'bid': 0.265,
+                'ask': 0.260,
+            }
+        ]
+
+        self.exchange.create_limit_buy_order.side_effect = [
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'buy',
+                'price': 0.261,
+                'cost': None,
+                'amount': 957.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []},
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'buy',
+                'price': 0.26,
+                'cost': None,
+                'amount': 961.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []
+            }
+        ]
 
         self.exchange.create_limit_sell_order.side_effect = [
             {
@@ -259,33 +241,14 @@ class TestTraderBot(unittest.TestCase):
                 'datetime': '2022-01-14T12:00:00.764Z',
                 'symbol': 'TRX/USD',
                 'type': 'limit',
-                'side': 'buy',
-                'price': 0.26,
+                'side': 'sell',
+                'price': 0.265,
                 'cost': None,
-                'amount': 50.0,
+                'amount': 961.0,
                 'filled': None,
                 'fee': None,
                 'trades': None,
-                'fees': []},
-            {
-                'id': 'O3NPC3-UJWI2-GH4I23',
-                'clientOrderId': None,
-                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
-                         'descr': {
-                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
-                'timestamp': 1600977946935,
-                'datetime': '2022-01-15T12:00:00.764Z',
-                'symbol': 'TRX/USD',
-                'type': 'limit',
-                'side': 'buy',
-                'price': 0.25,
-                'cost': None,
-                'amount': 50.0,
-                'filled': None,
-                'fee': None,
-                'trades': None,
-                'fees': []
-            }
+                'fees': []}
         ]
         volatility_trader.trade(self.ticker)
 
@@ -384,7 +347,7 @@ class TestTraderBot(unittest.TestCase):
                 'datetime': '2022-01-14T12:00:00.764Z',
                 'symbol': 'TRX/USD',
                 'type': 'limit',
-                'side': 'buy',
+                'side': 'sell',
                 'price': 0.275,
                 'cost': None,
                 'amount': 50.0,
@@ -402,10 +365,185 @@ class TestTraderBot(unittest.TestCase):
                 'datetime': '2022-01-15T12:00:00.764Z',
                 'symbol': 'TRX/USD',
                 'type': 'limit',
-                'side': 'buy',
+                'side': 'sell',
                 'price': 0.276,
                 'cost': None,
                 'amount': 50.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []
+            }
+        ]
+        volatility_trader.trade(self.ticker)
+
+    def test_trader_bot_1x_buy_1x_continue_1x_sell(self):
+        volatility_strategy = VolatilityTradingStrategy()
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
+
+        self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
+        self.exchange.fetch_ticker.side_effect = [
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-11T00:00:00.764Z',
+                'high': 0.3,
+                'low': 0.24,
+                'bid': 0.25,
+                'ask': 0.26,
+            },
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-10T12:00:00.764Z',
+                'high': 0.27,
+                'low': 0.25,
+                'bid': 0.26,
+                'ask': 0.25,
+            },
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'high': 0.27,
+                'low': 0.24,
+                'bid': 0.265,
+                'ask': 0.25,
+            }
+        ]
+
+        self.exchange.create_limit_buy_order.side_effect = [
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'buy',
+                'price': 0.26,
+                'cost': None,
+                'amount': 50.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []}
+        ]
+
+        self.exchange.create_limit_sell_order.side_effect = [
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-14T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'sell',
+                'price': 0.265,
+                'cost': None,
+                'amount': 50.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []}
+        ]
+        volatility_trader.trade(self.ticker)
+
+    def test_trader_bot_1x_buy_2x_sell(self):
+        volatility_strategy = VolatilityTradingStrategy()
+        volatility_trader = VolatilityTrader(self.exchange, volatility_strategy)
+
+        self.exchange.fetch_balance.return_value = {'USD': {'free': None, 'used': None, 'total': 1000}}
+        self.exchange.fetch_ticker.side_effect = [
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-11T00:00:00.764Z',
+                'high': 0.3,
+                'low': 0.24,
+                'bid': 0.25,
+                'ask': 0.26,
+            },
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'high': 0.28,
+                'low': 0.24,
+                'bid': 0.265,
+                'ask': 0.27,
+            },
+            {
+                'symbol': 'XLM/USD',
+                'timestamp': 1641903028764,
+                'datetime': '2022-01-12T12:00:00.764Z',
+                'high': 0.29,
+                'low': 0.26,
+                'bid': 0.29,
+                'ask': 0.27,
+            }
+        ]
+
+        self.exchange.create_limit_buy_order.side_effect = [
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-11T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'buy',
+                'price': 0.26,
+                'cost': None,
+                'amount': 961.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []}
+        ]
+
+        self.exchange.create_limit_sell_order.side_effect = [
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-14T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'sell',
+                'price': 0.265,
+                'cost': None,
+                'amount': 961.0,
+                'filled': None,
+                'fee': None,
+                'trades': None,
+                'fees': []},
+            {
+                'id': 'O3NPC3-UJWI2-GH4I23',
+                'clientOrderId': None,
+                'info': {'txid': ['O3NPC3-UJWI2-GH4I23'],
+                         'descr': {
+                             'order': 'buy 50.00000000 TRXUSD @ limit 0.857166'}},
+                'timestamp': 1600977946935,
+                'datetime': '2022-01-15T12:00:00.764Z',
+                'symbol': 'TRX/USD',
+                'type': 'limit',
+                'side': 'sell',
+                'price': 0.29,
+                'cost': None,
+                'amount': 100.0,
                 'filled': None,
                 'fee': None,
                 'trades': None,
