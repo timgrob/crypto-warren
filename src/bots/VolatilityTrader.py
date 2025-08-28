@@ -7,7 +7,7 @@ from queue import LifoQueue
 from datetime import datetime, timedelta
 from database.database_connection import Session
 from database.model import Trade
-from bots.TradingBot import TradingBot
+from bots.bot import TradingBot
 from strategies.TradingStrategies import TradingStrategy
 
 

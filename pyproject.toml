@@ -1,0 +1,18 @@
+[project]
+name = "crypto-warren"
+version = "0.1.0"
+description = "This is a crypto trading bot"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ccxt>=4.5.2",
+    "loguru>=0.7.3",
+    "psycopg2-binary>=2.9.10",
+    "sqlalchemy>=2.0.43",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+    "ruff>=0.12.10",
+]
