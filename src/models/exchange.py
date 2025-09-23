@@ -2,6 +2,21 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 
+class Side(StrEnum):
+    BUY = "buy"
+    SELL = "sell"
+
+
+class OrderType(StrEnum):
+    LIMIT = "limit"
+    MARKET = "market"
+
+
+class MarginMode(StrEnum):
+    CROSS = "cross"
+    ISOLATED = "isolated"
+
+
 @dataclass(frozen=True)
 class MinMax:
     min: float
@@ -21,6 +36,7 @@ class Limit:
 class Precision:
     amount: float
     price: float
+    cost: float
     base: float
     quote: float
 
@@ -32,6 +48,20 @@ class Market:
     precision: Precision
 
 
-class MarginMode(StrEnum):
-    CROSS = "cross"
-    ISOLATED = "isolated"
+@dataclass(frozen=True)
+class Position:
+    symbol: str
+    side: str
+    size: float
+    entry_price: float
+    mark_price: float | None = None
+    action: str | None = None
+    id: int | None = None
+
+    @property
+    def long(self) -> bool:
+        return self.side == "long"
+
+    @property
+    def short(self) -> bool:
+        return self.side == "short"

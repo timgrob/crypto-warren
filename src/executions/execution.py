@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 
-from src.bots.bot import TradingBot
+from src.bots.trading_bot import TradingBot
 
 uvloop.install()
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
@@ -33,7 +33,6 @@ class BotExecutor:
 
     async def _startup(self):
         logger.info(f"Starting bot {self.bot_name}")
-
         await self.bot.on_start()
 
         rate = self.bot.config.rate
@@ -45,15 +44,10 @@ class BotExecutor:
         )
         self.scheduler.add_job(self.bot.trade, trigger, name="Trade loop")
         self.scheduler.start()
-
         logger.info(f"Scheduler started for {self.bot_name}")
 
     async def _shutdown(self):
         logger.info(f"Bot stopping {self.bot_name}")
-        try:
-            await self.bot.on_stop()
-        except Exception as e:
-            logger.warning(f"Bot failed to stop cleanly: {e}")
-
+        await self.bot.on_stop()
         self.scheduler.shutdown(wait=False)
         logger.info(f"Scheduler stopped for {self.bot_name}")

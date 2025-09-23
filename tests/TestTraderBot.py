@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock
-from bots.bot import TradingBot
+from bots.trading_bot import TradingBot
 from bots.VolatilityTrader import VolatilityTrader
 from strategies.trading_strategies_old import VolatilityTradingStrategy
 from database.DatabaseConnectors import PostgresDatabase
