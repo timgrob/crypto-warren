@@ -1,11 +1,11 @@
 symbols:
   - SOL/USDC:USDC
   - ETH/USDC:USDC
-rate: "3"
-timeframe: "1h"
+rate: "*/3 * * * *"
+timeframe: "3m"
 leverage: 2
 position_notional_value: 25
-stop_loss: 0.03
+stop_loss: 0.002
 enable_trading: true
 params:
   ema_window: 8
