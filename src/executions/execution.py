@@ -49,5 +49,6 @@ class BotExecutor:
     async def _shutdown(self):
         logger.info(f"Bot stopping {self.bot_name}")
         await self.bot.on_stop()
-        self.scheduler.shutdown(wait=False)
+        if self.scheduler.running:
+            self.scheduler.shutdown(wait=False)
         logger.info(f"Scheduler stopped for {self.bot_name}")

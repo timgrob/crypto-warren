@@ -22,7 +22,7 @@ class TradingBot(Bot):
         super().__init__(exchange, strategy)
         self.symbols = self.config.symbols
         self.leverage = self.config.leverage
-        self.timeframe = self.config.timeframe.lower()
+        self.timeframe = self.config.timeframe
         self.stop_loss = self.config.stop_loss
         self.position_notional_value = Decimal(str(self.config.position_notional_value))
         self.params = self.config.params
