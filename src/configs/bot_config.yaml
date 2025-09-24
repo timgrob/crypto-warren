@@ -5,7 +5,7 @@ rate: "*/3 * * * *"
 timeframe: "3m"
 leverage: 2
 position_notional_value: 25
-stop_loss: 0.002
+stop_loss: 0.003
 enable_trading: true
 params:
   ema_window: 8
