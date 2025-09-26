@@ -1,6 +1,5 @@
 import asyncio
 import pandas as pd
-from decimal import Decimal
 from ta.volatility import AverageTrueRange
 from loguru import logger
 
@@ -24,7 +23,8 @@ class TradingBot(Bot):
         self.leverage = self.config.leverage
         self.timeframe = self.config.timeframe
         self.atr_stop_loss = self.config.atr_stop_loss
-        self.position_notional_value = Decimal(str(self.config.position_notional_value))
+        self.window = self.config.params["ema_window"]
+        self.position_notional_value = self.config.position_notional_value
         self.params = self.config.params
 
         self.markets: dict[str, Market] = {}
@@ -40,7 +40,7 @@ class TradingBot(Bot):
         for symbol in self.symbols:
             # Set leverage and margin-mode
             try:
-                await self.exchange.set_leverage(5, "BTC/USDT")
+                await self.exchange.set_leverage(self.leverage, symbol)
                 await self.exchange.set_margin_mode(self.margin_mode, symbol)
             except Exception as e:
                 raise e
@@ -85,7 +85,7 @@ class TradingBot(Bot):
             # Fetch current market price
             try:
                 ticker = await self.exchange.fetch_ticker(symbol)
-                current_price = Decimal(str(ticker["last"]))
+                current_price = ticker["last"]
             except Exception as e:
                 logger.error(f"Ticker could not be fetched: {str(e)}")
                 raise e
@@ -131,10 +131,6 @@ class TradingBot(Bot):
             side = Side.BUY if current_trend == Trend.UP else Side.SELL
             size = self.position_notional_value / current_price
             amount = self.exchange.amount_to_precision(symbol, size)
-            atr_indicator = AverageTrueRange(
-                df_ohlcv["high"], df_ohlcv["low"], df_ohlcv["close"]
-            )
-            atr = atr_indicator.average_true_range()
 
             # New order
             new_order = {
@@ -145,6 +141,14 @@ class TradingBot(Bot):
             }
             orders.append(new_order)
 
+            atr_indicator = AverageTrueRange(
+                df_ohlcv["high"], df_ohlcv["low"], df_ohlcv["close"]
+            )
+            atrs = atr_indicator.average_true_range()
+            atrs_mean = atrs.tail(self.window).mean()
+            stop_loss = self.atr_stop_loss * atrs_mean / current_price
+            call_back_rate = min(max(round(stop_loss * 100, 1), 0.1), 10)
+
             # Trailing stop-loss order
             stop_loss_order = {
                 "symbol": symbol,
@@ -152,7 +156,7 @@ class TradingBot(Bot):
                 "side": Side.SELL if side == Side.BUY else Side.BUY,
                 "amount": amount,
                 "params": {
-                    "callbackRate": self.atr_stop_loss,
+                    "callbackRate": call_back_rate,  # respect Binance callback limits
                     "reduceOnly": True,
                 },
             }

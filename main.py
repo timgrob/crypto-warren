@@ -1,11 +1,10 @@
 import os
 import yaml
-import ccxt
+import ccxt.async_support as ccxt
 from pathlib import Path
 
 from src.db.database import Base, engine
 from src.models.config import Config
-from src.models.exchange import Exchange
 from src.bots.trading_bot import TradingBot
 from src.strategies.momentum_strategies import EMATrendStrategy
 from src.executions.execution import BotExecutor
@@ -26,14 +25,7 @@ def main() -> None:
         cfg = yaml.safe_load(f)
 
     config = Config(**cfg)
-    exchange = ccxt.Exchange(
-        {
-            "apiKey": API_KEY,
-            "secret": API_SECRET,
-            "enableRateLimit": True,
-            "options": {"defaultType": "future"},
-        }
-    )
+    exchange = ccxt.binance({"apiKey": API_KEY, "secret": API_SECRET})
     strategy = EMATrendStrategy(config)
     trading_bot = TradingBot(exchange, strategy)
 
