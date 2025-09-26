@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from ccxt import Exchange
 
+from src.models.exchange import Exchange
 from src.strategies.strategy import Strategy
 
 

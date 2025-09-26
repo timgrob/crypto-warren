@@ -8,6 +8,6 @@ class Config:
     timeframe: str
     leverage: int
     position_notional_value: float
-    stop_loss: float
+    atr_stop_loss: float
     enable_trading: bool
     params: dict

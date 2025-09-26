@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
+import ccxt
 
 
 class Side(StrEnum):
@@ -65,3 +66,20 @@ class Position:
     @property
     def short(self) -> bool:
         return self.side == "short"
+
+
+class Exchange(ccxt.Exchange):
+    async def close_position(self, position: Position, params=...):
+        try:
+            order = {
+                "symbol": position.symbol,
+                "type": OrderType.MARKET,
+                "side": Side.SELL if position.long else Side.BUY,
+                "amount": position.size,
+                "params": params,
+            }
+            placed_order = await self.create_order(**order)
+        except TimeoutError:
+            self.logger.error(f"Position not close before timeout was reached")
+        except Exception as e:
+            self.logger.error(str(e))

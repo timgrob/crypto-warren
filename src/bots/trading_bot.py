@@ -1,8 +1,8 @@
 import asyncio
 import pandas as pd
 from decimal import Decimal
-from loguru import logger
 from ta.volatility import AverageTrueRange
+from loguru import logger
 
 from src.bots.bot import Bot
 from src.models.trading import Trend
@@ -23,7 +23,7 @@ class TradingBot(Bot):
         self.symbols = self.config.symbols
         self.leverage = self.config.leverage
         self.timeframe = self.config.timeframe
-        self.stop_loss = self.config.stop_loss
+        self.atr_stop_loss = self.config.atr_stop_loss
         self.position_notional_value = Decimal(str(self.config.position_notional_value))
         self.params = self.config.params
 
@@ -40,7 +40,7 @@ class TradingBot(Bot):
         for symbol in self.symbols:
             # Set leverage and margin-mode
             try:
-                await self.exchange.set_leverage(self.leverage, symbol)
+                await self.exchange.set_leverage(5, "BTC/USDT")
                 await self.exchange.set_margin_mode(self.margin_mode, symbol)
             except Exception as e:
                 raise e
@@ -131,6 +131,10 @@ class TradingBot(Bot):
             side = Side.BUY if current_trend == Trend.UP else Side.SELL
             size = self.position_notional_value / current_price
             amount = self.exchange.amount_to_precision(symbol, size)
+            atr_indicator = AverageTrueRange(
+                df_ohlcv["high"], df_ohlcv["low"], df_ohlcv["close"]
+            )
+            atr = atr_indicator.average_true_range()
 
             # New order
             new_order = {
@@ -148,7 +152,7 @@ class TradingBot(Bot):
                 "side": Side.SELL if side == Side.BUY else Side.BUY,
                 "amount": amount,
                 "params": {
-                    "callbackRate": self.stop_loss * 100,
+                    "callbackRate": self.atr_stop_loss,
                     "reduceOnly": True,
                 },
             }
@@ -160,9 +164,8 @@ class TradingBot(Bot):
 
         if self.config.enable_trading:
             async with asyncio.TaskGroup() as tg:
-                for pos in positions:
-                    side = Side.BUY if pos.long else Side.SELL
-                    tg.create_task(self.exchange.close_position(pos.symbol, side))
+                for position in positions:
+                    tg.create_task(self.exchange.close_position(position))
 
                 for order in orders:
                     tg.create_task(self.exchange.create_order(**order))
