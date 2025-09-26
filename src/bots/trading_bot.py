@@ -64,8 +64,8 @@ class TradingBot(Bot):
     async def trade(self):
         logger.info("Trading bot trades ...")
 
-        orders: list[dict] = []
-        positions: list[Position] = []
+        orders_open: list[dict] = []
+        orders_close: list[dict] = []
         open_positions: list[dict] = await self.exchange.fetch_positions()
         open_positions_lookup: dict[str, Position] = {}
 
@@ -139,7 +139,7 @@ class TradingBot(Bot):
                 "side": side,
                 "amount": amount,
             }
-            orders.append(new_order)
+            orders_open.append(new_order)
 
             atr_indicator = AverageTrueRange(
                 df_ohlcv["high"], df_ohlcv["low"], df_ohlcv["close"]
@@ -160,16 +160,22 @@ class TradingBot(Bot):
                     "reduceOnly": True,
                 },
             }
-            orders.append(stop_loss_order)
+            orders_open.append(stop_loss_order)
 
-            # Add position which needs to be closed
+            # Add order for position which needs to be closed
             if position:
-                positions.append(position)
+                close_order = {
+                    "symbol": position.symbol,
+                    "type": OrderType.MARKET,
+                    "side": Side.SELL if position.long else Side.BUY,
+                    "amount": position.size,
+                }
+                orders_close.append(close_order)
 
         if self.config.enable_trading:
             async with asyncio.TaskGroup() as tg:
-                for position in positions:
-                    tg.create_task(self.exchange.close_position(position))
+                for order in orders_close:
+                    tg.create_task(self.exchange.create_order(**order))
 
-                for order in orders:
+                for order in orders_open:
                     tg.create_task(self.exchange.create_order(**order))
