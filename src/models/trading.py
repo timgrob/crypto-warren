@@ -1,0 +1,7 @@
+from enum import Enum, auto
+
+
+class Trend(Enum):
+    UP = auto()
+    DOWN = auto()
+    NONE = auto()

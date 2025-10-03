@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    container_name: crypto-warren-app-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+    env_file:
+      - ".env"
+    depends_on:
+      - db
+
+
+  db:
+    image: postgres:latest
+    container_name: crypto-warren-db-dev
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

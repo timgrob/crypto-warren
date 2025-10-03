@@ -1,1 +1,0 @@
-worker: python crypto-warren.py

@@ -1,0 +1,25 @@
+from abc import ABC, abstractmethod
+import pandas as pd
+
+from src.models.trading import Trend
+from src.models.config import Config
+
+
+class Strategy(ABC):
+    def __init__(self, config: Config):
+        self.config = config
+
+    def get_config(self) -> Config:
+        return self.config
+
+    @abstractmethod
+    def buy_signal(self, ohlcv: pd.DataFrame) -> bool:
+        """Check if sell signal occurs based on the OHLCV data"""
+
+    @abstractmethod
+    def sell_signal(self, ohlcv: pd.DataFrame) -> bool:
+        """Check if buy signal occurs based on the OHLCV data"""
+
+    @abstractmethod
+    def current_trend(self, ohlcv: pd.DataFrame, col_name: str = "close") -> Trend:
+        """Determine the current trend based on the OHLCV data"""

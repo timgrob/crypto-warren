@@ -1,0 +1,3 @@
+ema_window: 8
+smoothing_length: 15
+polynomial_order: 4
