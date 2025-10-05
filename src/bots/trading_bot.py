@@ -58,6 +58,9 @@ class TradingBot(Bot):
 
         logger.info("Startup completed")
 
+        # Start trading immediately
+        await self.trade()
+
     async def on_stop(self):
         logger.info("Shutdown completed")
 
