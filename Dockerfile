@@ -32,9 +32,6 @@ ENV PATH="/app/.venv/bin:${PATH}" \
 
 ENV PYTHONPATH="/app/src"
 
-# Expose the port
-EXPOSE 8000
-
 # Create non-root user and drop privileges
 RUN adduser --system --group bot-user \
     && chown -R bot-user:bot-user /app
