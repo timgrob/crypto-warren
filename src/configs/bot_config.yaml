@@ -1,7 +1,7 @@
 symbols:
   - SOL/USDC:USDC
   - ETH/USDC:USDC
-rate: "*/3 * * * *"
+rate: "0 * * * *"
 timeframe: "1h"
 leverage: 5
 position_notional_value: 25
