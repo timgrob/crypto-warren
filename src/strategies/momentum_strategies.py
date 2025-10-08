@@ -23,8 +23,7 @@ class EMATrendStrategy(Strategy):
         trend = self.current_trend(ohlcv)
         return trend == Trend.DOWN
 
-    def current_trend(self, ohlcv, col_name: str = "close"):
-        prices = ohlcv[col_name]
+    def current_trend(self, prices):
         ema_indicator = EMAIndicator(prices, self.window, fillna=True)
         emas = ema_indicator.ema_indicator()
 
@@ -64,8 +63,7 @@ class EMASmoothingTrendStrategy(Strategy):
         trend = self.current_trend(ohlcv)
         return trend == Trend.DOWN
 
-    def current_trend(self, ohlcv, col_name: str = "close"):
-        prices = ohlcv[col_name]
+    def current_trend(self, prices):
         ema_indicator = EMAIndicator(prices, self.window, fillna=True)
         emas = ema_indicator.ema_indicator()
         emas = self._apply_smoothing(emas)

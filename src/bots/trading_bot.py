@@ -116,7 +116,7 @@ class TradingBot(Bot):
                 logger.info("No open position")
 
             # Determine current market trend
-            current_trend = self.strategy.current_trend(df_ohlcv)
+            current_trend = self.strategy.current_trend(df_ohlcv["close"])
             logger.info(f"Position trend: {position_trend}")
             logger.info(f"Market trend: {current_trend}")
             logger.info(f"Trend progression: {position_trend} -> {current_trend}")

@@ -21,5 +21,5 @@ class Strategy(ABC):
         """Check if buy signal occurs based on the OHLCV data"""
 
     @abstractmethod
-    def current_trend(self, ohlcv: pd.DataFrame, col_name: str = "close") -> Trend:
+    def current_trend(self, values: pd.Series) -> Trend:
         """Determine the current trend based on the OHLCV data"""
