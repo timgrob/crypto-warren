@@ -181,5 +181,6 @@ class TradingBot(Bot):
                     tg.create_task(self.exchange.create_order(**order))
                     tg.create_task(self.exchange.cancel_all_orders(order["symbol"]))
 
+            async with asyncio.TaskGroup() as tg:
                 for order in orders_open:
                     tg.create_task(self.exchange.create_order(**order))
