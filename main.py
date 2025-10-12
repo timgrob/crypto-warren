@@ -3,13 +3,10 @@ import yaml
 import ccxt.async_support as ccxt
 from pathlib import Path
 
-from src.db.database import Base, engine
-from src.models.config import Config
-from src.bots.trading_bot import TradingBot
-from src.strategies.momentum_strategies import (
-    EMATrendStrategy,
-    EMASmoothingTrendStrategy,
-)
+from db.database import Base, engine
+from models.config import Config
+from bots.trading_bot import TradingBot
+from strategies.momentum_strategies import EMATrendStrategy, EMASmoothingTrendStrategy
 from src.executions.execution import BotExecutor
 
 

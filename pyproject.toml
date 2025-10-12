@@ -27,3 +27,6 @@ dev = [
 
 [mypy]
 ignore_missing_imports = true
+
+[tool.pytest.ini_option]
+pythonpath = "."

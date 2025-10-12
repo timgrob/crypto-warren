@@ -3,9 +3,9 @@ import pandas as pd
 from ta.volatility import AverageTrueRange
 from loguru import logger
 
-from src.bots.bot import Bot
-from src.models.trading import Trend
-from src.models.exchange import (
+from bots.bot import Bot
+from models.trading import Trend
+from models.exchange import (
     MarginMode,
     Market,
     Limit,

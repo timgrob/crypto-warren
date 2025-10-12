@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 
-from src.models.trading import Trend
-from src.models.config import Config
+from models.trading import Trend
+from models.config import Config
 
 
 class Strategy(ABC):

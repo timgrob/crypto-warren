@@ -1,10 +1,9 @@
 from ta.trend import EMAIndicator
+from scipy.signal import savgol_filter
 import pandas as pd
-import scipy.signal
-import scipy
 
-from src.strategies.strategy import Strategy
-from src.models.trading import Trend
+from strategies.strategy import Strategy
+from models.trading import Trend
 
 
 class EMATrendStrategy(Strategy):
@@ -66,12 +65,12 @@ class EMASmoothingTrendStrategy(Strategy):
     def current_trend(self, prices):
         ema_indicator = EMAIndicator(prices, self.window, fillna=True)
         emas = ema_indicator.ema_indicator()
-        emas = self._apply_smoothing(emas)
 
         if len(emas) < 2:
             return Trend.NONE
 
-        # Find latest gradient
+        # Find latest gradient of smoothed emas
+        emas = self._apply_smoothing(emas)
         diff = emas.diff()
         delta = float(diff.iloc[-1])
 
@@ -85,5 +84,5 @@ class EMASmoothingTrendStrategy(Strategy):
     def _apply_smoothing(self, emas: pd.Series) -> pd.Series:
         # Spline smoothing
         window, poly = self.smooth_window, self.polyorder
-        emas_savgol = scipy.signal.savgol_filter(emas.values, window, poly)
+        emas_savgol = savgol_filter(emas.values, window, poly)
         return pd.Series(emas_savgol)
