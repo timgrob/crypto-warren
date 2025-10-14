@@ -6,7 +6,11 @@ from pathlib import Path
 from db.database import Base, engine
 from models.config import Config
 from bots.trading_bot import TradingBot
-from strategies.momentum_strategies import EMATrendStrategy, EMASmoothingTrendStrategy
+from strategies.momentum_strategies import (
+    EMATrendStrategy,
+    SavgolTrendStrategy,
+    KalmanTrendStrategy,
+)
 from src.executions.execution import BotExecutor
 
 
@@ -26,7 +30,7 @@ def main() -> None:
 
     config = Config(**cfg)
     exchange = ccxt.binance({"apiKey": API_KEY, "secret": API_SECRET})
-    strategy = EMASmoothingTrendStrategy(config)
+    strategy = KalmanTrendStrategy(config)
     trading_bot = TradingBot(exchange, strategy)
 
     BotExecutor(trading_bot).run()

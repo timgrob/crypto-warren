@@ -3,7 +3,7 @@ import pandas as pd
 
 from models.config import Config
 from models.trading import Trend
-from strategies.momentum_strategies import EMATrendStrategy, EMASmoothingTrendStrategy
+from strategies.momentum_strategies import EMATrendStrategy, SavgolTrendStrategy
 
 
 @pytest.fixture
@@ -56,7 +56,7 @@ def test_ema_trend_strategy_not_enough_entries(config):
 
 
 def test_ema_smoothing_trend_strategy_up(config):
-    strategy = EMASmoothingTrendStrategy(config)
+    strategy = SavgolTrendStrategy(config)
     prices = pd.Series(
         [
             180.6,
@@ -90,7 +90,7 @@ def test_ema_smoothing_trend_strategy_up(config):
 
 
 def test_ema_smoothing_trend_strategy_down(config):
-    strategy = EMASmoothingTrendStrategy(config)
+    strategy = SavgolTrendStrategy(config)
     ewms = pd.Series(
         [
             180.6,
@@ -118,7 +118,7 @@ def test_ema_smoothing_trend_strategy_down(config):
 
 
 def test_ema_smoothing_trend_strategy_not_enough_entries(config):
-    strategy = EMASmoothingTrendStrategy(config)
+    strategy = SavgolTrendStrategy(config)
     ewms = pd.Series([180.550675])
     trend = strategy.current_trend(ewms)
     assert trend == Trend.NONE
