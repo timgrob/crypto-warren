@@ -7,9 +7,11 @@ requires-python = ">=3.12"
 dependencies = [
     "apscheduler>=3.11.0",
     "ccxt>=4.5.5",
+    "filterpy>=1.4.5",
     "loguru>=0.7.3",
     "pandas>=2.3.2",
     "psycopg2-binary>=2.9.10",
+    "pykalman>=0.10.2",
     "pyyaml>=6.0.3",
     "scipy>=1.16.2",
     "sqlalchemy>=2.0.43",
