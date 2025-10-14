@@ -1,5 +1,6 @@
 from ta.trend import EMAIndicator
 from scipy.signal import savgol_filter
+from pykalman import KalmanFilter
 import pandas as pd
 
 from strategies.strategy import Strategy
@@ -23,13 +24,13 @@ class EMATrendStrategy(Strategy):
         return trend == Trend.DOWN
 
     def current_trend(self, prices):
+        if len(prices) < self.window:
+            return Trend.NONE
+
         ema_indicator = EMAIndicator(prices, self.window, fillna=True)
         emas = ema_indicator.ema_indicator()
 
-        if len(emas) < 2:
-            return Trend.NONE
-
-        # Find latest gradient
+        # Find latest gradient of emas
         diff = emas.diff()
         delta = float(diff.iloc[-1])
 
@@ -41,7 +42,7 @@ class EMATrendStrategy(Strategy):
         return trend
 
 
-class EMASmoothingTrendStrategy(Strategy):
+class SavgolTrendStrategy(Strategy):
     def __init__(self, config):
         super().__init__(config)
         required_keys = ["ema_window", "smooth_window", "polyorder"]
@@ -63,15 +64,18 @@ class EMASmoothingTrendStrategy(Strategy):
         return trend == Trend.DOWN
 
     def current_trend(self, prices):
+        if len(prices) < self.window:
+            return Trend.NONE
+
         ema_indicator = EMAIndicator(prices, self.window, fillna=True)
         emas = ema_indicator.ema_indicator()
 
-        if len(emas) < 2:
-            return Trend.NONE
+        # Apply Savitzky–Golay filter on emas
+        savgol_emas = savgol_filter(emas.values, self.smooth_window, self.polyorder)
+        smoothed_emas = pd.Series(savgol_emas)
 
         # Find latest gradient of smoothed emas
-        emas = self._apply_smoothing(emas)
-        diff = emas.diff()
+        diff = smoothed_emas.diff()
         delta = float(diff.iloc[-1])
 
         if delta == 0:
@@ -81,8 +85,32 @@ class EMASmoothingTrendStrategy(Strategy):
 
         return trend
 
-    def _apply_smoothing(self, emas: pd.Series) -> pd.Series:
-        # Spline smoothing
-        window, poly = self.smooth_window, self.polyorder
-        emas_savgol = savgol_filter(emas.values, window, poly)
-        return pd.Series(emas_savgol)
+
+class KalmanTrendStrategy(Strategy):
+    def __init__(self, config):
+        super().__init__(config)
+        self.kf = KalmanFilter()
+
+    def buy_signal(self, ohlcv):
+        trend = self.current_trend(ohlcv)
+        return trend == Trend.UP
+
+    def sell_signal(self, ohlcv):
+        trend = self.current_trend(ohlcv)
+        return trend == Trend.DOWN
+
+    def current_trend(self, prices: pd.Series):
+        kf = self.kf.em(prices)
+        smoothed, _ = kf.smooth(prices.values)
+        smoothed_prices = pd.Series(list(map(lambda x: x[0], smoothed)))
+
+        # Find latest gradient of smoothed prices
+        diff = smoothed_prices.diff()
+        delta = float(diff.iloc[-1])
+
+        if delta == 0:
+            trend = Trend.NONE
+        else:
+            trend = Trend.UP if delta > 0 else Trend.DOWN
+
+        return trend
