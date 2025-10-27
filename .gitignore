@@ -218,3 +218,18 @@ __marimo__/
 
 # SQLite
 .db
+
+# Crypto Warren specific
+# Backtesting results and data
+*.csv
+optimization_results.csv
+strategy_comparison_results.csv
+data/
+backtest_data/
+*.png
+*.jpg
+*.pdf
+
+# Trading database
+*.db
+crypto_warren.db
