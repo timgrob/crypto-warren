@@ -2,6 +2,9 @@ import os
 import yaml
 import ccxt.async_support as ccxt
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from src.db.database import Base, engine
 from src.models.config import Config
