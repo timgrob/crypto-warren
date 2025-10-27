@@ -26,8 +26,12 @@ class BotExecutor:
             await asyncio.Event().wait()
         except (KeyboardInterrupt, SystemExit):
             pass
+        except ExceptionGroup as eg:
+            logger.error(f"Exception in bot {self.bot_name}: ExceptionGroup with {len(eg.exceptions)} exceptions")
+            for i, exc in enumerate(eg.exceptions):
+                logger.error(f"Sub-exception {i+1}: {type(exc).__name__}: {exc}")
         except Exception as e:
-            logger.error(f"Exception in bot {self.bot_name}: {e}")
+            logger.error(f"Exception in bot {self.bot_name}: {type(e).__name__}: {e}")
         finally:
             await self._shutdown()
 

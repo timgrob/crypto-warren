@@ -62,6 +62,7 @@ class TradingBot(Bot):
         await self.trade()
 
     async def on_stop(self):
+        await self.exchange.close()
         logger.info("Shutdown completed")
 
     async def trade(self):
@@ -135,6 +136,8 @@ class TradingBot(Bot):
             size = self.position_notional_value / current_price
             amount = self.exchange.amount_to_precision(symbol, size)
 
+            logger.info(f"Calculated order: side={side}, size={size}, amount={amount}, current_price={current_price}")
+
             # New order
             new_order = {
                 "symbol": symbol,
@@ -143,6 +146,13 @@ class TradingBot(Bot):
                 "amount": amount,
             }
             orders_open.append(new_order)
+
+            # Calculate notional value
+            try:
+                notional = float(amount) * current_price
+                logger.info(f"Created market order: side={side}, amount={amount}, notional=${notional:.2f}")
+            except Exception as e:
+                logger.error(f"Error calculating notional: amount={amount} (type={type(amount)}), current_price={current_price} (type={type(current_price)}), error={e}")
 
             atr_indicator = AverageTrueRange(
                 df_ohlcv["high"], df_ohlcv["low"], df_ohlcv["close"]
@@ -165,6 +175,13 @@ class TradingBot(Bot):
             }
             orders_open.append(stop_loss_order)
 
+            # Calculate notional value for stop loss
+            try:
+                notional_sl = float(amount) * current_price
+                logger.info(f"Created trailing stop order: callbackRate={call_back_rate}%, amount={amount}, notional=${notional_sl:.2f}")
+            except Exception as e:
+                logger.error(f"Error calculating stop loss notional: {e}")
+
             # Add order for position which needs to be closed
             if position:
                 close_order = {
@@ -176,11 +193,31 @@ class TradingBot(Bot):
                 orders_close.append(close_order)
 
         if self.config.enable_trading:
-            async with asyncio.TaskGroup() as tg:
-                for order in orders_close:
-                    tg.create_task(self.exchange.create_order(**order))
-                    tg.create_task(self.exchange.cancel_all_orders(order["symbol"]))
+            # Close existing positions first
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    for order in orders_close:
+                        tg.create_task(self.exchange.create_order(**order))
+                        tg.create_task(self.exchange.cancel_all_orders(order["symbol"]))
+            except ExceptionGroup as eg:
+                logger.error(f"Error closing positions: {len(eg.exceptions)} exceptions occurred")
+                for i, exc in enumerate(eg.exceptions):
+                    logger.error(f"Close order exception {i+1}: {type(exc).__name__}: {exc}")
+                raise
+            except Exception as e:
+                logger.error(f"Error closing positions: {type(e).__name__}: {e}")
+                raise
 
-            async with asyncio.TaskGroup() as tg:
-                for order in orders_open:
-                    tg.create_task(self.exchange.create_order(**order))
+            # Open new positions
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    for order in orders_open:
+                        tg.create_task(self.exchange.create_order(**order))
+            except ExceptionGroup as eg:
+                logger.error(f"Error opening positions: {len(eg.exceptions)} exceptions occurred")
+                for i, exc in enumerate(eg.exceptions):
+                    logger.error(f"Open order exception {i+1}: {type(exc).__name__}: {exc}")
+                raise
+            except Exception as e:
+                logger.error(f"Error opening positions: {type(e).__name__}: {e}")
+                raise
