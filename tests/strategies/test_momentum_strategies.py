@@ -1,9 +1,13 @@
 import pytest
 import pandas as pd
 
-from models.config import Config
-from models.trading import Trend
-from strategies.momentum_strategies import EMATrendStrategy, SavgolTrendStrategy
+from src.models.config import Config
+from src.models.trading import Trend
+from src.strategies.momentum_strategies import (
+    EMATrendStrategy,
+    SavgolTrendStrategy,
+    KalmanTrendStrategy,
+)
 
 
 @pytest.fixture
@@ -36,14 +40,14 @@ def config():
 
 def test_ema_trend_strategy_up(config):
     strategy = EMATrendStrategy(config)
-    prices = pd.Series([180.0, 181.0, 183.0, 186.0])
+    prices = pd.Series([178.8, 179.2, 179.7, 180.6, 181.0, 183.2, 186.0, 188.2])
     trend = strategy.current_trend(prices)
     assert trend == Trend.UP
 
 
 def test_ema_trend_strategy_down(config):
     strategy = EMATrendStrategy(config)
-    ewms = pd.Series([180.0, 183.0, 186.0, 181.0])
+    ewms = pd.Series([180.0, 181.0, 183.0, 186.0, 180.6, 179.7, 179.2, 178.8])
     trend = strategy.current_trend(ewms)
     assert trend == Trend.DOWN
 
@@ -55,7 +59,7 @@ def test_ema_trend_strategy_not_enough_entries(config):
     assert trend == Trend.NONE
 
 
-def test_ema_smoothing_trend_strategy_up(config):
+def test_savgol_trend_strategy_up(config):
     strategy = SavgolTrendStrategy(config)
     prices = pd.Series(
         [
@@ -89,7 +93,7 @@ def test_ema_smoothing_trend_strategy_up(config):
     assert trend == Trend.UP
 
 
-def test_ema_smoothing_trend_strategy_down(config):
+def test_savgol_trend_strategy_down(config):
     strategy = SavgolTrendStrategy(config)
     ewms = pd.Series(
         [
@@ -117,8 +121,26 @@ def test_ema_smoothing_trend_strategy_down(config):
     assert trend == Trend.DOWN
 
 
-def test_ema_smoothing_trend_strategy_not_enough_entries(config):
+def test_savgol_trend_strategy_not_enough_entries(config):
     strategy = SavgolTrendStrategy(config)
     ewms = pd.Series([180.550675])
     trend = strategy.current_trend(ewms)
     assert trend == Trend.NONE
+
+
+def test_kalman_trend_strategy_up(config):
+    strategy = SavgolTrendStrategy(config)
+    prices = pd.Series(
+        [177.8, 178.1, 178.3, 178.8, 179.2, 179.7, 180.6, 181.0, 183.2, 186.0, 188.2]
+    )
+    trend = strategy.current_trend(prices)
+    assert trend == Trend.UP
+
+
+def test_kalman_trend_strategy_down(config):
+    strategy = SavgolTrendStrategy(config)
+    prices = pd.Series(
+        [180.0, 181.0, 183.0, 186.0, 180.6, 179.7, 179.2, 178.8, 178.3, 178.1, 177.8]
+    )
+    trend = strategy.current_trend(prices)
+    assert trend == Trend.DOWN
