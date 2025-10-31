@@ -1,10 +1,11 @@
 from ta.trend import EMAIndicator
-from scipy.signal import savgol_filter
 from pykalman import KalmanFilter
+from scipy.signal import savgol_filter
+from loguru import logger
 import pandas as pd
 
-from strategies.strategy import Strategy
-from models.trading import Trend
+from src.strategies.strategy import Strategy
+from src.models.trading import Trend
 
 
 class EMATrendStrategy(Strategy):
@@ -78,6 +79,8 @@ class SavgolTrendStrategy(Strategy):
         diff = smoothed_emas.diff()
         delta = float(diff.iloc[-1])
 
+        logger.debug(f"Savgol: {', '.join([str(round(v, 3)) for v in diff.tail()])}")
+
         if delta == 0:
             trend = Trend.NONE
         else:
@@ -108,7 +111,10 @@ class KalmanTrendStrategy(Strategy):
         diff = smoothed_prices.diff()
         delta = float(diff.iloc[-1])
 
-        if delta == 0:
+        logger.debug(f"Kalman: {', '.join([str(round(v, 3)) for v in diff.tail()])}")
+
+        # A too small delta, is not considered as a trend
+        if -0.1 <= delta <= 0.1:
             trend = Trend.NONE
         else:
             trend = Trend.UP if delta > 0 else Trend.DOWN

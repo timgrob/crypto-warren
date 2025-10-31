@@ -3,9 +3,9 @@ import pandas as pd
 from ta.volatility import AverageTrueRange
 from loguru import logger
 
-from bots.bot import Bot
-from models.trading import Trend
-from models.exchange import (
+from src.bots.bot import Bot
+from src.models.trading import Trend
+from src.models.exchange import (
     MarginMode,
     Market,
     Limit,
@@ -95,7 +95,7 @@ class TradingBot(Bot):
 
             # Fetch OHLCV
             try:
-                limit = 200
+                limit = 1500
                 ohlcv = await self.exchange.fetch_ohlcv(
                     symbol, self.timeframe, limit=limit
                 )
@@ -120,6 +120,7 @@ class TradingBot(Bot):
             logger.info(f"Position trend: {position_trend}")
             logger.info(f"Market trend: {current_trend}")
             logger.info(f"Trend progression: {position_trend} -> {current_trend}")
+            logger.info(f"Current price: {current_price}")
 
             # No strong trend could be detected
             if current_trend == Trend.NONE:

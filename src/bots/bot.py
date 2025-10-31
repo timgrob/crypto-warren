@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from ccxt import Exchange
 
-from strategies.strategy import Strategy
+from src.strategies.strategy import Strategy
 
 
 class Bot(ABC):
